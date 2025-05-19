@@ -1,7 +1,7 @@
 // src/App.js
 import React from "react";
 import Home from "./pages/Home";
-import BookingForm from "./components/Booking/BookingForm";
+import BookingForm from "./components/booking/BookingForm";
 import Header from "./components/header";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
