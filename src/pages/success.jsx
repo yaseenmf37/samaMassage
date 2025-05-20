@@ -12,9 +12,48 @@ export default function Success() {
         const bookingData = JSON.parse(localStorage.getItem("pendingBooking"));
 
         if (bookingData) {
-          // ارسال اطلاعات به API با آدرس کامل
-          await axios.post("https://samamassage.ir/api/verify-payment", {
-            bookingData,
+          // 1. ذخیره اطلاعات رزرو در Sheet1
+          const bookingEndpoint =
+            "https://v1.nocodeapi.com/hirad_code/google_sheets/OCYcMVSbTPlthojY?tabId=Sheet1";
+
+          await axios.post(bookingEndpoint, [
+            [
+              bookingData.name,
+              bookingData.phone,
+              bookingData.gender,
+              bookingData.massageType,
+              bookingData.date,
+              bookingData.time,
+              bookingData.timestamp,
+            ],
+          ]);
+
+          // 2. دریافت لیست تایم‌های موجود از Sheet2
+          const slotsEndpoint =
+            "https://v1.nocodeapi.com/hirad_code/google_sheets/KxyYWWEQsUFfClqY?tabId=Sheet2";
+
+          const slotsResponse = await axios.get(slotsEndpoint);
+          const allSlots = slotsResponse.data.data;
+
+          // 3. فیلتر کردن تایم رزرو شده از لیست
+          const updatedSlots = allSlots.filter(
+            (slot) =>
+              !(
+                slot.date === bookingData.date && slot.time === bookingData.time
+              )
+          );
+
+          // 4. آپدیت Sheet2 با لیست جدید
+          const updateSlotsEndpoint =
+            "https://v1.nocodeapi.com/hirad_code/google_sheets/KxyYWWEQsUFfClqY?tabId=Sheet2";
+
+          // تبدیل داده‌ها به فرمت مورد نیاز برای آپدیت
+          const updateData = updatedSlots.map((slot) => [slot.date, slot.time]);
+
+          // 5. پاک کردن تمام داده‌های قبلی و اضافه کردن داده‌های جدید
+          await axios.post(updateSlotsEndpoint, {
+            data: updateData,
+            clear: true,
           });
 
           // پاک کردن اطلاعات از localStorage
