@@ -1,10 +1,30 @@
 import { useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import axios from "axios";
 
 export default function Success() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    const saveBookingData = async () => {
+      try {
+        // دریافت اطلاعات رزرو از localStorage
+        const bookingData = JSON.parse(localStorage.getItem("pendingBooking"));
+
+        if (bookingData) {
+          // ارسال اطلاعات به API
+          await axios.post("/api/verify-payment", { bookingData });
+
+          // پاک کردن اطلاعات از localStorage
+          localStorage.removeItem("pendingBooking");
+        }
+      } catch (error) {
+        console.error("Error saving booking data:", error);
+      }
+    };
+
+    saveBookingData();
+
     // بعد از 5 ثانیه به صفحه اصلی هدایت می‌شود
     const timer = setTimeout(() => {
       navigate("/");

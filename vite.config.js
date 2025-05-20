@@ -20,5 +20,12 @@ export default defineConfig({
     watch: {
       usePolling: true, // این گزینه ممکنه مشکل شما رو حل کنه
     },
+    proxy: {
+      "/api": {
+        target: "http://localhost:3000",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ""),
+      },
+    },
   },
 });
