@@ -5,8 +5,10 @@ import RadioGroup from "./RadioGroup";
 import { validateName, validatePhone } from "./utils";
 // import DateObject from "date-object";
 import DateObject from "react-date-object";
+import { useNavigate } from "react-router-dom";
 
 export default function BookingForm() {
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     name: "",
     phone: "",
@@ -15,6 +17,8 @@ export default function BookingForm() {
     date: "",
     time: "",
   });
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
   const [dateObj, setDateObj] = useState(null);
 
   const [errors, setErrors] = useState({});
@@ -30,22 +34,25 @@ export default function BookingForm() {
         const endpoint =
           "https://v1.nocodeapi.com/hirad_code/google_sheets/KxyYWWEQsUFfClqY?tabId=Sheet2";
         const res = await axios.get(endpoint);
-        // فرض: اولین ردیف هدر است
         const rows = res.data.data;
-        console.log("rows from sheet:", rows); // لاگ ردیف‌ها
+
+        // تبدیل داده‌ها به فرمت مورد نیاز
         const slots = rows.map((row) => ({
           date: row["date"],
           time: row["time"],
         }));
-        console.log("slots:", slots); // لاگ اسلات‌ها
+
         setAllSlots(slots);
+
         // تاریخ‌های یکتا
         const uniqueDates = [...new Set(slots.map((s) => s.date))];
         setAvailableDays(uniqueDates);
       } catch (err) {
+        console.error("Error fetching slots:", err);
         setAvailableDays([]);
       }
     }
+
     fetchSlots();
   }, []);
 
@@ -73,6 +80,7 @@ export default function BookingForm() {
     if (!validateName(form.name)) newErrors.name = "نام معتبر نیست.";
     if (!validatePhone(form.phone))
       newErrors.phone = "شماره موبایل معتبر نیست.";
+    if (!termsAccepted) newErrors.terms = "لطفاً قوانین را بپذیرید.";
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -83,34 +91,18 @@ export default function BookingForm() {
     setLoading(true);
 
     try {
-      const endpoint =
-        "https://v1.nocodeapi.com/hirad_code/google_sheets/OCYcMVSbTPlthojY?tabId=Sheet1";
+      // ذخیره اطلاعات در localStorage برای استفاده بعد از پرداخت
+      const bookingData = {
+        ...form,
+        timestamp: new Date().toLocaleString("fa-IR"),
+      };
+      localStorage.setItem("pendingBooking", JSON.stringify(bookingData));
 
-      await axios.post(endpoint, [
-        [
-          form.name,
-          form.phone,
-          form.gender,
-          form.massageType,
-          form.date,
-          form.time,
-          new Date().toLocaleString("fa-IR"),
-        ],
-      ]);
-
-      alert("رزرو با موفقیت ثبت شد!");
-      setForm({
-        name: "",
-        phone: "",
-        gender: "زن",
-        massageType: "ریلکسی",
-        date: "",
-        time: "",
-      });
+      // هدایت به درگاه پرداخت
+      window.location.href = "https://zarinp.al/714162";
     } catch (error) {
       alert("خطا در ارسال اطلاعات. لطفاً دوباره تلاش کنید.");
       console.error(error);
-    } finally {
       setLoading(false);
     }
   };
@@ -241,6 +233,28 @@ export default function BookingForm() {
         })()}
       </div>
 
+      <div className="flex items-center gap-2">
+        <input
+          type="checkbox"
+          id="terms"
+          checked={termsAccepted}
+          onChange={(e) => setTermsAccepted(e.target.checked)}
+          className="w-4 h-4"
+        />
+        <label htmlFor="terms" className="text-sm">
+          <span
+            className="text-blue-600 cursor-pointer hover:underline"
+            onClick={() => setShowTermsModal(true)}
+          >
+            قوانین و مقررات
+          </span>
+          {" را مطالعه کرده و می‌پذیرم"}
+        </label>
+      </div>
+      {errors.terms && (
+        <div className="text-red-500 text-sm">{errors.terms}</div>
+      )}
+
       <button
         type="submit"
         disabled={loading}
@@ -248,6 +262,45 @@ export default function BookingForm() {
       >
         {loading ? "در حال ارسال..." : "ثبت رزرو"}
       </button>
+
+      {/* مودال قوانین و مقررات */}
+      {showTermsModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 max-w-lg w-full mx-4 max-h-[80vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-bold">قوانین و مقررات</h3>
+              <button
+                onClick={() => setShowTermsModal(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="space-y-4 text-sm">
+              <p>1. رزرو ماساژ فقط از طریق این وب‌سایت امکان‌پذیر است.</p>
+              <p>2. حداقل 24 ساعت قبل از زمان رزرو باید ثبت‌نام انجام شود.</p>
+              <p>
+                3. در صورت کنسل کردن رزرو کمتر از 24 ساعت قبل از زمان تعیین شده،
+                مبلغ پیش‌پرداخت قابل بازگشت نیست.
+              </p>
+              <p>4. لطفاً 15 دقیقه قبل از زمان رزرو در محل حضور داشته باشید.</p>
+              <p>5. همراه داشتن کارت شناسایی الزامی است.</p>
+              <p>6. رعایت بهداشت فردی و استفاده از حوله شخصی الزامی است.</p>
+              <p>
+                7. در صورت بروز هرگونه مشکل یا سوال، با پشتیبانی تماس بگیرید.
+              </p>
+            </div>
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={() => setShowTermsModal(false)}
+                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+              >
+                بستن
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </form>
   );
 }

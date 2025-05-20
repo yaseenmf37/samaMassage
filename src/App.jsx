@@ -8,6 +8,8 @@ import "react-toastify/dist/ReactToastify.css";
 import "./index.css";
 import About from "./pages/about";
 import Footer from "./components/Footer";
+import Success from "./pages/success";
+import Failed from "./pages/failed";
 
 function App() {
   return (
@@ -19,6 +21,8 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/booking" element={<BookingForm />} />
             <Route path="/about" element={<About />} />
+            <Route path="/success" element={<Success />} />
+            <Route path="/failed" element={<Failed />} />
           </Routes>
         </main>
         <Footer />
