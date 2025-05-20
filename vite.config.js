@@ -5,10 +5,15 @@ import svgr from "vite-plugin-svgr";
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react(), svgr()],
+  base: "/",
+  build: {
+    outDir: "dist",
+    assetsDir: "assets",
+  },
   server: {
-    host: true,
     port: 3000,
-    open: true,
+    strictPort: true,
+    host: true,
     hmr: {
       overlay: true,
     },
