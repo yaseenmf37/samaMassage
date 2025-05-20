@@ -12,8 +12,10 @@ export default function Success() {
         const bookingData = JSON.parse(localStorage.getItem("pendingBooking"));
 
         if (bookingData) {
-          // ارسال اطلاعات به API
-          await axios.post("/api/verify-payment", { bookingData });
+          // ارسال اطلاعات به API با آدرس کامل
+          await axios.post("https://samamassage.ir/api/verify-payment", {
+            bookingData,
+          });
 
           // پاک کردن اطلاعات از localStorage
           localStorage.removeItem("pendingBooking");
