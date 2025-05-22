@@ -10,6 +10,7 @@ import About from "./pages/about";
 import Footer from "./components/Footer";
 import Success from "./pages/success";
 import Failed from "./pages/failed";
+import FAQ from "./pages/FAQ";
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
             <Route path="/about" element={<About />} />
             <Route path="/success" element={<Success />} />
             <Route path="/failed" element={<Failed />} />
+            <Route path="/faq" element={<FAQ />} />
           </Routes>
         </main>
         <Footer />

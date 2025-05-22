@@ -12,7 +12,7 @@ const About = () => {
 
       <div className="flex flex-col md:flex-row items-center gap-10">
         <img
-          src="../../public/img.png"
+          src="/about.jpg"
           alt="درباره ماساژ"
           className="w-40 h-40 rounded-xl object-cover shadow-md"
         />

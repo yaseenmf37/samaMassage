@@ -10,18 +10,18 @@ function Home() {
       <div className="max-w-[1440px] flex m-auto items-center flex-col">
         <div className="w-full mt-14">
           <img
-            src="../public/img.png"
-            alt="img"
+            src="/img.png"
+            alt="massage"
             className="w-full max-h-[40rem] object-cover rounded-3xl"
           />
         </div>
-        <div className="w-full mt-10">
+        <div className="w-full mt-10 cursor-default">
           <Desc />
         </div>
         <div className="mt-20 w-full " id="booking" ref={bookingRef}>
           <Booking />
         </div>
-        <div className="w-full my-20" id="services">
+        <div className="w-full my-20 cursor-default" id="services">
           <Servises />
         </div>
       </div>

@@ -29,7 +29,9 @@ const Header = () => {
   return (
     <header className="bg-gradient-to-r from-green-500 to-green-700 py-4 rounded-b-2xl">
       <div className="max-w-7xl mx-auto flex justify-between items-center px-4">
-        <h1 className="text-white text-3xl font-bold">سما ماساژ</h1>
+        <Link to="/" className="text-white text-3xl font-bold">
+          سما ماساژ
+        </Link>
         <nav>
           <ul className="flex space-x-8 text-center gap-6 max-md:gap-4">
             <li className="!m-0">

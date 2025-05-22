@@ -7,40 +7,53 @@ const Servises = () => {
       title: "ماساژ ترکیبی VIP",
       description:
         "ترکیبی منحصر به فرد از بهترین تکنیک‌های ماساژ شامل:\n• ماساژ روسی\n• ماساژ سوئدی\n• ماساژ تایلندی\n• ماساژ صورت\n• ماساژ درمانی\n• ماساژ فشاری",
-      image: "/img.png",
-      price: "1,000,000 تومان",
+      image: "/tarkibi.webp",
     },
     {
       id: 2,
       title: "ماساژ سنگ داغ VIP",
       description:
         "ماساژ درمانی با سنگ‌های داغ برای:\n• ریلکسیشن عمیق بدن\n• درمان سیاتیک و دیسک\n• رفع اسپاسم و گرفتگی عضلات\n• درمان تریگر پوینت\n• کاهش دردهای عضلانی",
-      image: "/img.png",
-      price: "1,200,000 تومان",
+      image: "/sang.webp",
     },
     {
       id: 3,
       title: "ماساژ بادکش VIP",
       description:
         "ماساژ درمانی با بادکش برای:\n• کاهش دردهای عضلانی\n• رفع التهاب\n• درمان گرفتگی عضلات\n• بهبود گردش خون\n• دفع سموم بدن",
-      image: "/img.png",
-      price: "1,100,000 تومان",
+      image: "/baad.jpg",
     },
     {
       id: 4,
       title: "ماساژ نمک درمانی VIP",
       description:
         "ماساژ درمانی با نمک برای:\n• درمان مشکلات پوستی\n• تسکین استرس و اضطراب\n• پاکسازی پوست\n• جوانسازی پوست\n• ریلکسیشن عمیق",
-      image: "/img.png",
-      price: "1,300,000 تومان",
+      image: "/namak.jpg",
+    },
+  ];
+
+  const combinedServices = [
+    {
+      id: 1,
+      title: "ماساژ ریلکسی VIP",
+      description:
+        "ماساژ آرامش‌بخش و ریلکسی برای:\n• کاهش استرس و اضطراب\n• بهبود کیفیت خواب\n• آرامش ذهن و بدن\n• رفع خستگی روزانه\n• افزایش انرژی مثبت\n• تجربه آرامش عمیق",
+      image: "/relax.png",
     },
   ];
 
   return (
     <div className="w-full py-12 px-4">
-      <h2 className="text-3xl font-bold text-center mb-12 text-gray-800">
-        سرویس‌های ماساژ VIP
-      </h2>
+      <div className="text-center mb-12">
+        <div className="flex items-center justify-center gap-4">
+          <h2 className="text-4xl font-bold text-gray-800">
+            سرویس‌های ماساژ VIP
+          </h2>
+          <div className="bg-green-50 px-6 py-2 rounded-full">
+            <p className="text-green-600 font-bold text-xl">1,000,000 تومان</p>
+          </div>
+        </div>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
         {services.map((service) => (
           <div
@@ -53,14 +66,53 @@ const Servises = () => {
                 alt={service.title}
                 className="w-full h-full object-cover"
               />
-              {/* <div className="absolute top-4 right-4 bg-green-600 text-white px-3 py-1 rounded-full text-sm">
-                {service.price}
-              </div> */}
             </div>
             <div className="p-6">
-              <h3 className="text-xl font-bold text-gray-800 mb-4">
-                {service.title}
-              </h3>
+              <div className="mb-4">
+                <h3 className="text-xl font-bold text-gray-800">
+                  {service.title}
+                </h3>
+              </div>
+              <div className="text-gray-600 whitespace-pre-line">
+                {service.description}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="text-center mt-20 mb-12">
+        <div className="flex items-center justify-center gap-4">
+          <h2 className="text-4xl font-bold text-gray-800">
+            سرویس ماساژ های ریلکسی
+          </h2>
+          <div className="bg-green-50 px-6 py-2 rounded-full">
+            <p className="text-green-600 font-bold text-xl">850,000 تومان</p>
+          </div>
+        </div>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
+        {combinedServices.map((service) => (
+          <div
+            key={service.id}
+            className="bg-white rounded-2xl shadow-lg overflow-hidden transform transition-all duration-300 hover:scale-105"
+          >
+            <div className="relative h-48">
+              <img
+                src={service.image}
+                alt={service.title}
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div className="p-6">
+              <div className="mb-4">
+                <h3 className="text-xl font-bold text-gray-800">
+                  {service.title}
+                </h3>
+                <p className="text-green-600 font-semibold mt-2">
+                  {service.price}
+                </p>
+              </div>
               <div className="text-gray-600 whitespace-pre-line">
                 {service.description}
               </div>

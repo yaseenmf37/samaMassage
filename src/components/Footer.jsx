@@ -48,11 +48,11 @@ const Footer = () => {
                   خدمات
                 </button>
               </li>
-              {/* <li>
-                <a href="#contact" className="hover:text-gray-100">
-                  تماس با ما
-                </a>
-              </li> */}
+              <li>
+                <Link to="/faq" className="hover:text-gray-100">
+                  سوالات متداول
+                </Link>
+              </li>
             </ul>
           </div>
           <div>
