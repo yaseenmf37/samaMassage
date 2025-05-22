@@ -1,5 +1,5 @@
 // src/App.js
-import React from "react";
+import React, { useEffect } from "react";
 import Home from "./pages/Home";
 import BookingForm from "./components/booking/BookingForm";
 import Header from "./components/header";
@@ -11,8 +11,20 @@ import Footer from "./components/Footer";
 import Success from "./pages/success";
 import Failed from "./pages/failed";
 import FAQ from "./pages/FAQ";
+import { ToastContainer } from "react-toastify";
+import { bookingService } from "./services/bookingService";
 
 function App() {
+  useEffect(() => {
+    console.log("Initializing available times...");
+    bookingService
+      .initializeAvailableTimes()
+      .then(() => console.log("Available times initialization attempted."))
+      .catch((error) =>
+        console.error("Error initializing available times:", error)
+      );
+  }, []);
+
   return (
     <div className="min-h-screen flex flex-col bg-[#a8d5ba]">
       <Router>
@@ -28,6 +40,18 @@ function App() {
           </Routes>
         </main>
         <Footer />
+        <ToastContainer
+          position="top-center"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop
+          closeOnClick
+          rtl={true}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="light"
+        />
       </Router>
     </div>
   );

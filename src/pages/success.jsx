@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import axios from "axios";
+import { toast } from "react-toastify";
+import { bookingService } from "../services/bookingService";
 
 export default function Success() {
   const navigate = useNavigate();
@@ -8,73 +9,27 @@ export default function Success() {
   useEffect(() => {
     const saveBookingData = async () => {
       try {
-        // دریافت اطلاعات رزرو از localStorage
         const bookingData = JSON.parse(localStorage.getItem("pendingBooking"));
 
         if (bookingData) {
-          // 1. ذخیره اطلاعات رزرو در Sheet1
-          const bookingEndpoint =
-            "https://v1.nocodeapi.com/hirad_code/google_sheets/OCYcMVSbTPlthojY?tabId=Sheet1";
+          await bookingService.createBooking(bookingData);
+          toast.success("اطلاعات رزرو با موفقیت ثبت شد");
 
-          await axios.post(bookingEndpoint, [
-            [
-              bookingData.name,
-              bookingData.phone,
-              bookingData.gender,
-              bookingData.massageType,
-              bookingData.date,
-              bookingData.time,
-              bookingData.timestamp,
-            ],
-          ]);
+          const { date, time } = bookingData;
+          await bookingService.markTimeAsBooked(date, time);
 
-          console.log("اطلاعات رزرو در Sheet1 ذخیره شد");
-
-          // 2. دریافت لیست تایم‌های موجود از Sheet2
-          const slotsEndpoint =
-            "https://v1.nocodeapi.com/hirad_code/google_sheets/KxyYWWEQsUFfClqY?tabId=Sheet2";
-
-          const slotsResponse = await axios.get(slotsEndpoint);
-          const allSlots = slotsResponse.data.data;
-
-          console.log("تایم‌های موجود از Sheet2 دریافت شد:", allSlots);
-
-          // 3. حذف تایم رزرو شده از لیست
-          const updatedSlots = allSlots.filter(
-            (slot) =>
-              !(
-                slot.date === bookingData.date && slot.time === bookingData.time
-              )
-          );
-
-          console.log("تایم رزرو شده حذف شد. لیست جدید:", updatedSlots);
-
-          // 4. آپدیت Sheet2 با لیست جدید (بدون تایم رزرو شده)
-          const updateSlotsEndpoint =
-            "https://v1.nocodeapi.com/hirad_code/google_sheets/KxyYWWEQsUFfClqY?tabId=Sheet2";
-
-          // تبدیل داده‌ها به فرمت مورد نیاز برای آپدیت
-          const updateData = updatedSlots.map((slot) => [slot.date, slot.time]);
-
-          // 5. پاک کردن تمام داده‌های قبلی و اضافه کردن داده‌های جدید
-          await axios.post(updateSlotsEndpoint, {
-            data: updateData,
-            clear: true,
-          });
-
-          console.log("Sheet2 با موفقیت آپدیت شد");
-
-          // پاک کردن اطلاعات از localStorage
           localStorage.removeItem("pendingBooking");
         }
       } catch (error) {
         console.error("خطا در ذخیره اطلاعات:", error);
+        toast.error(
+          "متأسفانه در ثبت اطلاعات مشکلی پیش آمد. لطفا با پشتیبانی تماس بگیرید."
+        );
       }
     };
 
     saveBookingData();
 
-    // بعد از 5 ثانیه به صفحه اصلی هدایت می‌شود
     const timer = setTimeout(() => {
       navigate("/");
     }, 5000);

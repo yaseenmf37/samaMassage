@@ -1,11 +1,10 @@
-import axios from "axios";
 import { useState, useEffect } from "react";
 import InputField from "./InputField";
 import RadioGroup from "./RadioGroup";
 import { validateName, validatePhone } from "./utils";
-// import DateObject from "date-object";
-import DateObject from "react-date-object";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import { bookingService } from "../../services/bookingService";
 
 export default function BookingForm() {
   const navigate = useNavigate();
@@ -19,54 +18,51 @@ export default function BookingForm() {
   });
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
-  const [dateObj, setDateObj] = useState(null);
-
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
-
   const [availableDays, setAvailableDays] = useState([]);
   const [availableTimes, setAvailableTimes] = useState([]);
-  const [allSlots, setAllSlots] = useState([]);
 
+  // تایم‌های ثابت برای هر روز
+  const availableTimeSlots = [
+    "10:00",
+    "11:00",
+    "12:00",
+    "13:00",
+    "14:00",
+    "15:00",
+    "16:00",
+    "17:00",
+    "18:00",
+    "19:00",
+    "20:00",
+    "21:00",
+  ];
+
+  // تولید تاریخ‌های 15 روز آینده
   useEffect(() => {
-    async function fetchSlots() {
+    const days = getNext15Days();
+    setAvailableDays(days);
+  }, []);
+
+  // دریافت تایم‌های موجود برای تاریخ انتخاب شده
+  useEffect(() => {
+    async function fetchAvailableTimes() {
+      if (!form.date) {
+        setAvailableTimes([]);
+        return;
+      }
       try {
-        const endpoint =
-          "https://v1.nocodeapi.com/hirad_code/google_sheets/KxyYWWEQsUFfClqY?tabId=Sheet2";
-        const res = await axios.get(endpoint);
-        const rows = res.data.data;
-
-        // تبدیل داده‌ها به فرمت مورد نیاز
-        const slots = rows.map((row) => ({
-          date: row["date"],
-          time: row["time"],
-        }));
-
-        setAllSlots(slots);
-
-        // تاریخ‌های یکتا
-        const uniqueDates = [...new Set(slots.map((s) => s.date))];
-        setAvailableDays(uniqueDates);
-      } catch (err) {
-        console.error("Error fetching slots:", err);
-        setAvailableDays([]);
+        const times = await bookingService.getAvailableTimes(form.date);
+        setAvailableTimes(times);
+      } catch (error) {
+        toast.error("خطا در دریافت تایم‌های موجود");
+        setAvailableTimes([]);
       }
     }
 
-    fetchSlots();
-  }, []);
-
-  // وقتی تاریخ انتخاب شد، ساعت‌های مجاز همان تاریخ را پیدا کن
-  useEffect(() => {
-    if (!form.date) {
-      setAvailableTimes([]);
-      return;
-    }
-    const times = allSlots
-      .filter((s) => s.date === form.date)
-      .map((s) => s.time);
-    setAvailableTimes(times);
-  }, [form.date, allSlots]);
+    fetchAvailableTimes();
+  }, [form.date]);
 
   const handleChange = (field, value) => {
     setForm({ ...form, [field]: value });
@@ -101,7 +97,7 @@ export default function BookingForm() {
       // هدایت به درگاه پرداخت
       window.location.href = "https://zarinp.al/714162";
     } catch (error) {
-      alert("خطا در ارسال اطلاعات. لطفاً دوباره تلاش کنید.");
+      toast.error("خطا در ارسال اطلاعات. لطفاً دوباره تلاش کنید.");
       console.error(error);
       setLoading(false);
     }
@@ -110,27 +106,6 @@ export default function BookingForm() {
   const massageOptions = [
     { label: "ریلکسی", price: 850000, prepay: 200000 },
     { label: "VIP", price: 1000000, prepay: 200000 },
-  ];
-
-  // تابع تبدیل اعداد به فارسی
-  function toPersianDigits(str) {
-    return str.replace(/\d/g, (d) => "۰۱۲۳۴۵۶۷۸۹"[d]);
-  }
-
-  // آرایه ماه‌های فارسی
-  const persianMonths = [
-    "فروردین",
-    "اردیبهشت",
-    "خرداد",
-    "تیر",
-    "مرداد",
-    "شهریور",
-    "مهر",
-    "آبان",
-    "آذر",
-    "دی",
-    "بهمن",
-    "اسفند",
   ];
 
   function getNext15Days() {
@@ -197,9 +172,9 @@ export default function BookingForm() {
         required
       >
         <option value="">انتخاب تاریخ</option>
-        {availableDays.map((date) => (
-          <option key={date} value={date}>
-            {date}
+        {availableDays.map((day) => (
+          <option key={day.value} value={day.value}>
+            {day.label}
           </option>
         ))}
       </select>
@@ -248,59 +223,18 @@ export default function BookingForm() {
           >
             قوانین و مقررات
           </span>
-          {" را مطالعه کرده و می‌پذیرم"}
+          را مطالعه کرده و می‌پذیرم
         </label>
       </div>
-      {errors.terms && (
-        <div className="text-red-500 text-sm">{errors.terms}</div>
-      )}
+      {errors.terms && <p className="text-red-500 text-sm">{errors.terms}</p>}
 
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-xl"
+        className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors disabled:bg-gray-400"
       >
-        {loading ? "در حال ارسال..." : "ثبت رزرو"}
+        {loading ? "در حال پردازش..." : "ادامه و پرداخت"}
       </button>
-
-      {/* مودال قوانین و مقررات */}
-      {showTermsModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 max-w-lg w-full mx-4 max-h-[80vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-bold">قوانین و مقررات</h3>
-              <button
-                onClick={() => setShowTermsModal(false)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                ✕
-              </button>
-            </div>
-            <div className="space-y-4 text-sm">
-              <p>1. رزرو ماساژ فقط از طریق این وب‌سایت امکان‌پذیر است.</p>
-              <p>2. حداقل 24 ساعت قبل از زمان رزرو باید ثبت‌نام انجام شود.</p>
-              <p>
-                3. در صورت کنسل کردن رزرو کمتر از 24 ساعت قبل از زمان تعیین شده،
-                مبلغ پیش‌پرداخت قابل بازگشت نیست.
-              </p>
-              <p>4. لطفاً 15 دقیقه قبل از زمان رزرو در محل حضور داشته باشید.</p>
-              <p>5. همراه داشتن کارت شناسایی الزامی است.</p>
-              <p>6. رعایت بهداشت فردی و استفاده از حوله شخصی الزامی است.</p>
-              <p>
-                7. در صورت بروز هرگونه مشکل یا سوال، با پشتیبانی تماس بگیرید.
-              </p>
-            </div>
-            <div className="mt-6 flex justify-end">
-              <button
-                onClick={() => setShowTermsModal(false)}
-                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
-              >
-                بستن
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </form>
   );
 }

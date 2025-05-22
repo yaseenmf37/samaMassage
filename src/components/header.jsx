@@ -1,5 +1,6 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const Header = () => {
   const navigate = useNavigate(); // برای پیمایش به صفحه
@@ -19,10 +20,11 @@ const Header = () => {
     navigator.clipboard
       .writeText(phoneNumber)
       .then(() => {
-        alert("شماره تماس کپی شد!");
+        toast.success("شماره تماس کپی شد!");
       })
       .catch((error) => {
         console.error("خطا در کپی کردن شماره تماس: ", error);
+        toast.error("خطا در کپی کردن شماره تماس");
       });
   };
 

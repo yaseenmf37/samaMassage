@@ -1,5 +1,6 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const Footer = () => {
   const navigate = useNavigate();
@@ -8,8 +9,11 @@ const Footer = () => {
     const phoneNumber = "09390310090";
     navigator.clipboard
       .writeText(phoneNumber)
-      .then(() => alert("شماره تماس کپی شد!"))
-      .catch((err) => console.error("کپی نشد:", err));
+      .then(() => toast.success("شماره تماس کپی شد!"))
+      .catch((err) => {
+        console.error("کپی نشد:", err);
+        toast.error("خطا در کپی کردن شماره تماس");
+      });
   };
 
   const scrollToSection = (sectionId) => {

@@ -1,10 +1,13 @@
 import { useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { toast } from "react-toastify";
 
 export default function Failed() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    toast.error("پرداخت ناموفق بود. لطفاً دوباره تلاش کنید.");
+
     // بعد از 5 ثانیه به صفحه اصلی هدایت می‌شود
     const timer = setTimeout(() => {
       navigate("/");
