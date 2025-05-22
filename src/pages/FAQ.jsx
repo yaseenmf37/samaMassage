@@ -95,7 +95,7 @@ const FAQ = () => {
   };
 
   return (
-    <div className="w-full py-12 px-4 bg-gray-50">
+    <div className="w-full py-12 px-4 bg-gray-50 my-10 rounded-2xl">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-4xl font-bold text-center text-gray-800 mb-12">
           سوالات متداول

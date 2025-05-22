@@ -45,7 +45,7 @@ const Servises = () => {
   return (
     <div className="w-full py-12 px-4">
       <div className="text-center mb-12">
-        <div className="flex items-center justify-center gap-4">
+        <div className="flex items-center justify-center gap-4 max-md:flex-col max-md:gap-8">
           <h2 className="text-4xl font-bold text-gray-800">
             سرویس‌های ماساژ VIP
           </h2>
@@ -82,7 +82,7 @@ const Servises = () => {
       </div>
 
       <div className="text-center mt-20 mb-12">
-        <div className="flex items-center justify-center gap-4">
+        <div className="flex items-center justify-center gap-4 max-md:flex-col max-md:gap-8">
           <h2 className="text-4xl font-bold text-gray-800">
             سرویس ماساژ های ریلکسی
           </h2>

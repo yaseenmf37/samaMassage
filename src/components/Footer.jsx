@@ -27,9 +27,9 @@ const Footer = () => {
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between items-center flex-wrap gap-6">
           <div>
-            <h2 className="text-2xl font-bold">درباره ما</h2>
+            <h2 className="text-2xl font-bold">آدرس</h2>
             <p className="text-gray-100 mt-2">
-              ما در اینجا به شما بهترین تجربه ماساژ را ارائه می‌دهیم.
+              درحال حاضر آدرس به صورت پیامکی برای شما ارسال میشود.
             </p>
           </div>
           <div>
