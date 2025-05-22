@@ -79,7 +79,7 @@ export default function BookingForm() {
     const newErrors = {};
     if (!validateName(form.name)) newErrors.name = "نام معتبر نیست.";
     if (!validatePhone(form.phone))
-      newErrors.phone = "شماره موبایل معتبر نیست.";
+      newErrors.phone = "شماره موبایل متغیر نیست. لطفا لاتین وارد کنید";
     if (!termsAccepted) newErrors.terms = "لطفاً قوانین را بپذیرید.";
 
     if (Object.keys(newErrors).length > 0) {
