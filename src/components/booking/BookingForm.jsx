@@ -5,6 +5,7 @@ import { validateName, validatePhone } from "./utils";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { bookingService } from "../../services/bookingService";
+import TermsModal from "../TermsModal";
 
 export default function BookingForm() {
   const navigate = useNavigate();
@@ -208,7 +209,7 @@ export default function BookingForm() {
         })()}
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 max-md:items-baseline">
         <input
           type="checkbox"
           id="terms"
@@ -222,7 +223,7 @@ export default function BookingForm() {
             onClick={() => setShowTermsModal(true)}
           >
             قوانین و مقررات
-          </span>
+          </span>{" "}
           را مطالعه کرده و می‌پذیرم
         </label>
       </div>
@@ -235,6 +236,11 @@ export default function BookingForm() {
       >
         {loading ? "در حال پردازش..." : "ادامه و پرداخت"}
       </button>
+
+      <TermsModal
+        isOpen={showTermsModal}
+        onClose={() => setShowTermsModal(false)}
+      />
     </form>
   );
 }
