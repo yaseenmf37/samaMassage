@@ -21,9 +21,9 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json({ success: true, booking });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
-      { error: "خطا در پردازش پرداخت" },
+      { error: "خطا در ارتباط با سرور" },
       { status: 500 }
     );
   }

@@ -7,12 +7,13 @@ const ADMIN_PASSWORD = "admin123";
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const { username, password } = body;
+    const data = await request.json();
+    const { username, password } = data;
 
-    if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-      // در یک محیط واقعی، باید از JWT یا روش‌های امن‌تر استفاده کنید
-      cookies().set("admin_session", "authenticated", {
+    // بررسی اعتبار کاربر
+    if (username === "admin" && password === "admin123") {
+      // ذخیره توکن در کوکی
+      cookies().set("admin-token", "admin-token", {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "strict",
@@ -26,9 +27,9 @@ export async function POST(request: Request) {
       { error: "نام کاربری یا رمز عبور اشتباه است" },
       { status: 401 }
     );
-  } catch (error) {
+  } catch {
     return NextResponse.json(
-      { error: "خطا در پردازش درخواست" },
+      { error: "خطا در ارتباط با سرور" },
       { status: 500 }
     );
   }

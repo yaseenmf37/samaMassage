@@ -1,12 +1,12 @@
 import fs from "fs";
 import path from "path";
 
-interface TimeSlot {
+export interface TimeSlot {
   date: string;
   time: string;
 }
 
-interface Booking extends TimeSlot {
+export interface Booking extends TimeSlot {
   massageType: string;
   name: string;
   phone: string;
@@ -56,7 +56,7 @@ export function addTimeSlot(date: string, time: string) {
 export function removeTimeSlot(date: string, time: string) {
   console.log("Removing time slot:", { date, time });
   const index = timeSlots.findIndex(
-    (slot: TimeSlot) => slot.date === date && slot.time === time
+    (slot) => slot.date === date && slot.time === time
   );
   if (index !== -1) {
     timeSlots.splice(index, 1);
@@ -85,3 +85,6 @@ export function getTimeSlots() {
 export function getBookings() {
   return bookings;
 }
+
+// Export the arrays
+export { timeSlots, bookings };

@@ -27,7 +27,7 @@ export default function AdminLogin() {
       } else {
         setError("نام کاربری یا رمز عبور اشتباه است");
       }
-    } catch (err) {
+    } catch {
       setError("خطا در ارتباط با سرور");
     }
   };

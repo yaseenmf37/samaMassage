@@ -1,50 +1,39 @@
 "use client"; // این خط برای استفاده از State و Effect در کامپوننت‌های کلاینت لازم است
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import DatePicker from "react-multi-date-picker";
 import persian from "react-date-object/calendars/persian";
 import persian_fa from "react-date-object/locales/persian_fa";
+import { TimeSlot, Booking } from "@/lib/data";
 
-interface TimeSlot {
-  date: string;
-  time: string;
-}
-
-export default function AdminPanel() {
-  const [dateInput, setDateInput] = useState("");
-  const [timeInput, setTimeInput] = useState("");
-  const [message, setMessage] = useState("");
+export default function AdminPage() {
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
-  const [bookings, setBookings] = useState<TimeSlot[]>([]);
-  const router = useRouter();
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [date, setDate] = useState("");
+  const [time, setTime] = useState("");
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
-    fetchTimeSlots();
-    fetchBookings();
+    fetchData();
   }, []);
 
-  const fetchTimeSlots = async () => {
+  const fetchData = async () => {
     try {
-      const response = await fetch("/api/admin/time-slots");
-      if (response.ok) {
-        const data = await response.json();
-        setTimeSlots(data.timeSlots);
-      }
-    } catch (error) {
-      console.error("Error fetching time slots:", error);
-    }
-  };
+      const [timeSlotsRes, bookingsRes] = await Promise.all([
+        fetch("/api/admin/time-slots"),
+        fetch("/api/admin/bookings"),
+      ]);
 
-  const fetchBookings = async () => {
-    try {
-      const response = await fetch("/api/admin/bookings");
-      if (response.ok) {
-        const data = await response.json();
-        setBookings(data.bookings);
+      if (timeSlotsRes.ok && bookingsRes.ok) {
+        const [timeSlotsData, bookingsData] = await Promise.all([
+          timeSlotsRes.json(),
+          bookingsRes.json(),
+        ]);
+        setTimeSlots(timeSlotsData.timeSlots);
+        setBookings(bookingsData.bookings);
       }
-    } catch (error) {
-      console.error("Error fetching bookings:", error);
+    } catch {
+      setMessage("خطا در دریافت اطلاعات");
     }
   };
 
@@ -52,8 +41,8 @@ export default function AdminPanel() {
     e.preventDefault();
     setMessage("");
 
-    if (!dateInput || !timeInput) {
-      setMessage("لطفاً تاریخ و ساعت را وارد کنید");
+    if (!date || !time) {
+      setMessage("لطفاً تاریخ و زمان را وارد کنید");
       return;
     }
 
@@ -63,19 +52,18 @@ export default function AdminPanel() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ date: dateInput, time: timeInput }),
+        body: JSON.stringify({ date, time }),
       });
 
       if (response.ok) {
+        setDate("");
+        setTime("");
+        fetchData();
         setMessage("زمان با موفقیت اضافه شد");
-        setDateInput("");
-        setTimeInput("");
-        fetchTimeSlots();
       } else {
-        const data = await response.json();
-        setMessage(data.error || "خطا در افزودن زمان");
+        setMessage("خطا در اضافه کردن زمان");
       }
-    } catch (error) {
+    } catch {
       setMessage("خطا در ارتباط با سرور");
     }
   };
@@ -91,13 +79,12 @@ export default function AdminPanel() {
       });
 
       if (response.ok) {
+        fetchData();
         setMessage("زمان با موفقیت حذف شد");
-        fetchTimeSlots();
       } else {
-        const data = await response.json();
-        setMessage(data.error || "خطا در حذف زمان");
+        setMessage("خطا در حذف زمان");
       }
-    } catch (error) {
+    } catch {
       setMessage("خطا در ارتباط با سرور");
     }
   };
@@ -113,13 +100,12 @@ export default function AdminPanel() {
       });
 
       if (response.ok) {
+        fetchData();
         setMessage("رزرو با موفقیت حذف شد");
-        fetchBookings();
       } else {
-        const data = await response.json();
-        setMessage(data.error || "خطا در حذف رزرو");
+        setMessage("خطا در حذف رزرو");
       }
-    } catch (error) {
+    } catch {
       setMessage("خطا در ارتباط با سرور");
     }
   };
@@ -140,11 +126,11 @@ export default function AdminPanel() {
                 calendar={persian}
                 locale={persian_fa}
                 calendarPosition="bottom-right"
-                value={dateInput}
+                value={date}
                 onChange={(date) => {
                   if (date) {
                     const formattedDate = date.format("YYYY/MM/DD");
-                    setDateInput(formattedDate);
+                    setDate(formattedDate);
                   }
                 }}
                 inputClass="w-full px-4 py-2 border rounded-lg"
@@ -156,8 +142,8 @@ export default function AdminPanel() {
               <label className="block text-gray-700 mb-2">ساعت:</label>
               <input
                 type="time"
-                value={timeInput}
-                onChange={(e) => setTimeInput(e.target.value)}
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
                 className="w-full px-4 py-2 border rounded-lg"
                 required
               />

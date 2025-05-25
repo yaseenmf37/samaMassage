@@ -42,9 +42,9 @@ export async function POST(request: Request) {
     removeTimeSlot(date, time);
 
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
-      { error: "خطا در پردازش درخواست" },
+      { error: "خطا در ارتباط با سرور" },
       { status: 500 }
     );
   }
