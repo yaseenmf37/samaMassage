@@ -553,26 +553,3 @@ export default function Home() {
     </div>
   );
 }
-
-// اضافه کردن اسکریپت برای تغییر قیمت بر اساس نوع ماساژ
-const script = `
-  document.addEventListener('DOMContentLoaded', function() {
-    const massageTypes = document.getElementsByName('massageType');
-    const totalPriceElement = document.getElementById('totalPrice');
-    
-    massageTypes.forEach(type => {
-      type.addEventListener('change', function() {
-        if (this.value === 'relaxing') {
-          totalPriceElement.textContent = 'مبلغ کل: 850,000 تومان';
-        } else if (this.value === 'vip') {
-          totalPriceElement.textContent = 'مبلغ کل: 1,000,000 تومان';
-        }
-      });
-    });
-  });
-`;
-
-// اضافه کردن اسکریپت به صفحه
-const scriptElement = document.createElement("script");
-scriptElement.textContent = script;
-document.head.appendChild(scriptElement);
