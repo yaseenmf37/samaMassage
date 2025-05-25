@@ -9,32 +9,54 @@ export default function SuccessPage() {
   const [countdown, setCountdown] = useState(5);
 
   useEffect(() => {
+    console.log("Attempting to retrieve booking data from localStorage...");
     const bookingDataString = localStorage.getItem("bookingData");
 
     if (bookingDataString) {
-      const bookingData = JSON.parse(bookingDataString);
-      // ارسال اطلاعات رزرو به API سرور
-      fetch("/api/bookings", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(bookingData),
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.success) {
-            console.log("Booking successfully recorded!");
-            localStorage.removeItem("bookingData"); // پاک کردن اطلاعات از localStorage
-          } else {
-            console.error("Failed to record booking:", data.error);
-            // شاید نیاز به نمایش پیامی به کاربر باشد
-          }
+      console.log("Booking data found in localStorage:", bookingDataString);
+      try {
+        const bookingData = JSON.parse(bookingDataString);
+        console.log("Parsed booking data:", bookingData);
+        // ارسال اطلاعات رزرو به API سرور
+        console.log("Sending booking data to /api/bookings...");
+        fetch("/api/bookings", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(bookingData),
         })
-        .catch((error) => {
-          console.error("Error sending booking data:", error);
-          // شاید نیاز به نمایش پیامی به کاربر باشد
-        });
+          .then(async (response) => {
+            console.log("Response received from /api/bookings:", response);
+            if (!response.ok) {
+              const errorText = await response.text();
+              console.error(
+                "API responded with an error status:",
+                response.status,
+                errorText
+              );
+              // شاید نیاز به نمایش پیامی به کاربر باشد
+              return Promise.reject(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+          })
+          .then((data) => {
+            console.log("Data received from /api/bookings:", data);
+            if (data.success) {
+              console.log("Booking successfully recorded!");
+              localStorage.removeItem("bookingData"); // پاک کردن اطلاعات از localStorage
+            } else {
+              console.error("Failed to record booking:", data.error);
+              // شاید نیاز به نمایش پیامی به کاربر باشد
+            }
+          })
+          .catch((error) => {
+            console.error("Error during fetch or processing response:", error);
+            // شاید نیاز به نمایش پیامی به کاربر باشد
+          });
+      } catch (e) {
+        console.error("Error parsing booking data from localStorage:", e);
+      }
     } else {
       console.warn("No booking data found in localStorage.");
     }
