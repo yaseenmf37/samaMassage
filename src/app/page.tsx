@@ -2,11 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-
-interface TimeSlot {
-  date: string;
-  time: string;
-}
+import { TimeSlot } from "@/lib/data";
 
 export default function Home() {
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
@@ -14,7 +10,7 @@ export default function Home() {
   const [selectedTime, setSelectedTime] = useState("");
   const [message, setMessage] = useState("");
   const [selectedMassageType, setSelectedMassageType] = useState("");
-  const [totalPrice, setTotalPrice] = useState("");
+  const [totalPrice, setTotalPrice] = useState(0);
 
   useEffect(() => {
     fetchTimeSlots();
@@ -22,11 +18,11 @@ export default function Home() {
 
   useEffect(() => {
     if (selectedMassageType === "relaxing") {
-      setTotalPrice("850,000");
+      setTotalPrice(850000);
     } else if (selectedMassageType === "vip") {
-      setTotalPrice("1,000,000");
+      setTotalPrice(1000000);
     } else {
-      setTotalPrice("");
+      setTotalPrice(0);
     }
   }, [selectedMassageType]);
 
@@ -53,27 +49,20 @@ export default function Home() {
     }
 
     try {
-      // ذخیره اطلاعات رزرو در localStorage
       const bookingData = {
         date: selectedDate,
         time: selectedTime,
         massageType: selectedMassageType,
         name: (document.getElementById("name") as HTMLInputElement).value,
         phone: (document.getElementById("phone") as HTMLInputElement).value,
-        gender: (
-          document.querySelector(
-            'input[name="gender"]:checked'
-          ) as HTMLInputElement
-        )?.value,
-        notes: (
-          document.querySelector(
-            'textarea[name="notes"]'
-          ) as HTMLTextAreaElement
-        )?.value,
+        gender: (document.getElementById("gender") as HTMLSelectElement).value,
+        notes: (document.getElementById("notes") as HTMLTextAreaElement).value,
       };
+
+      // ذخیره اطلاعات رزرو در localStorage
       localStorage.setItem("bookingData", JSON.stringify(bookingData));
 
-      // هدایت به درگاه پرداخت
+      // انتقال به درگاه پرداخت
       window.location.href = "https://zarinp.al/714162";
     } catch {
       setMessage("خطا در ارتباط با سرور");
@@ -348,7 +337,7 @@ export default function Home() {
                 </p>
                 <p className="text-gray-700 mb-4">
                   {totalPrice ? (
-                    <span>مبلغ کل: {totalPrice} تومان</span>
+                    <span>مبلغ کل: {totalPrice.toLocaleString()} تومان</span>
                   ) : (
                     <span className="text-red-500">
                       لطفاً نوع ماساژ را انتخاب کنید
