@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import {
-  timeSlots,
-  bookings,
   removeTimeSlot,
   addBooking,
   TimeSlot,
   Booking,
+  getTimeSlots,
+  getBookings,
 } from "@/lib/data";
 
 export async function POST(request: Request) {
@@ -23,7 +23,11 @@ export async function POST(request: Request) {
       );
     }
 
-    console.log(`Checking if time slot ${date} ${time} exists...`);
+    const timeSlots = getTimeSlots();
+    console.log(
+      `Checking if time slot ${date} ${time} exists in current time slots:`,
+      timeSlots
+    );
     // بررسی وجود زمان در لیست زمان‌های موجود
     const timeSlotExists = timeSlots.some(
       (slot: TimeSlot) => slot.date === date && slot.time === time
@@ -37,7 +41,11 @@ export async function POST(request: Request) {
       );
     }
 
-    console.log(`Checking if time slot ${date} ${time} is already booked...`);
+    const bookings = getBookings();
+    console.log(
+      `Checking if time slot ${date} ${time} is already booked in current bookings:`,
+      bookings
+    );
     // بررسی رزرو بودن زمان
     const isBooked = bookings.some(
       (booking: Booking) => booking.date === date && booking.time === time

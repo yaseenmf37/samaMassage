@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import {
   // timeSlots,
-  bookings,
-  removeTimeSlot,
+  removeBooking,
+  getBookings,
   // addBooking,
   // TimeSlot,
   // Booking,
@@ -18,8 +18,11 @@ export async function GET() {
       return NextResponse.json({ error: "دسترسی غیرمجاز" }, { status: 401 });
     }
 
+    const bookings = getBookings();
+    console.log("Admin panel - Current bookings:", bookings);
     return NextResponse.json({ bookings });
-  } catch {
+  } catch (error) {
+    console.error("Error fetching bookings in admin panel:", error);
     return NextResponse.json(
       { error: "خطا در ارتباط با سرور" },
       { status: 500 }
@@ -45,16 +48,17 @@ export async function DELETE(request: Request) {
       );
     }
 
-    const success = removeTimeSlot(date, time);
+    const success = removeBooking(date, time);
     if (!success) {
       return NextResponse.json(
-        { error: "زمان مورد نظر یافت نشد" },
+        { error: "رزرو مورد نظر یافت نشد" },
         { status: 404 }
       );
     }
 
     return NextResponse.json({ success: true });
-  } catch {
+  } catch (error) {
+    console.error("Error deleting booking in admin panel:", error);
     return NextResponse.json(
       { error: "خطا در ارتباط با سرور" },
       { status: 500 }
