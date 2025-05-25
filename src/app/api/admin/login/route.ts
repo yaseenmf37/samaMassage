@@ -9,7 +9,8 @@ export async function POST(request: Request) {
     // بررسی اعتبار کاربر
     if (username === "admin" && password === "admin123") {
       // ذخیره توکن در کوکی
-      cookies().set("admin-token", "admin-token", {
+      const cookieStore = await cookies();
+      cookieStore.set("admin-token", "admin-token", {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "strict",

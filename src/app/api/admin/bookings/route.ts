@@ -1,21 +1,27 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { bookings, removeTimeSlot } from "@/lib/data";
+import {
+  timeSlots,
+  bookings,
+  removeTimeSlot,
+  addBooking,
+  TimeSlot,
+  Booking,
+} from "@/lib/data";
 
 export async function GET() {
   try {
-    const cookieStore = cookies();
-    const adminSession = cookieStore.get("admin_session");
+    const cookieStore = await cookies();
+    const adminSession = cookieStore.get("admin-token");
 
-    if (adminSession?.value !== "authenticated") {
+    if (!adminSession) {
       return NextResponse.json({ error: "دسترسی غیرمجاز" }, { status: 401 });
     }
 
     return NextResponse.json({ bookings });
-  } catch (error) {
-    console.error("Error in GET /api/admin/bookings:", error);
+  } catch {
     return NextResponse.json(
-      { error: "خطا در پردازش درخواست" },
+      { error: "خطا در ارتباط با سرور" },
       { status: 500 }
     );
   }
@@ -23,35 +29,34 @@ export async function GET() {
 
 export async function DELETE(request: Request) {
   try {
-    const cookieStore = cookies();
-    const adminSession = cookieStore.get("admin_session");
+    const cookieStore = await cookies();
+    const adminSession = cookieStore.get("admin-token");
 
-    if (adminSession?.value !== "authenticated") {
+    if (!adminSession) {
       return NextResponse.json({ error: "دسترسی غیرمجاز" }, { status: 401 });
     }
 
-    const body = await request.json();
-    const { date, time } = body;
+    const { date, time } = await request.json();
 
-    // حذف رزرو و اضافه کردن زمان به لیست زمان‌های موجود
-    const index = bookings.findIndex(
-      (booking) => booking.date === date && booking.time === time
-    );
-    if (index !== -1) {
-      bookings.splice(index, 1);
-      // اضافه کردن زمان به لیست زمان‌های موجود
-      removeTimeSlot(date, time);
-      return NextResponse.json({ success: true });
+    if (!date || !time) {
+      return NextResponse.json(
+        { error: "تاریخ و زمان الزامی هستند" },
+        { status: 400 }
+      );
     }
 
+    const success = removeTimeSlot(date, time);
+    if (!success) {
+      return NextResponse.json(
+        { error: "زمان مورد نظر یافت نشد" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({ success: true });
+  } catch {
     return NextResponse.json(
-      { error: "رزرو مورد نظر یافت نشد" },
-      { status: 404 }
-    );
-  } catch (error) {
-    console.error("Error in DELETE /api/admin/bookings:", error);
-    return NextResponse.json(
-      { error: "خطا در پردازش درخواست" },
+      { error: "خطا در ارتباط با سرور" },
       { status: 500 }
     );
   }
