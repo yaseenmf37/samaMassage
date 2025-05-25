@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import {
-  timeSlots,
+  // timeSlots,
   bookings,
   removeTimeSlot,
-  addBooking,
-  TimeSlot,
-  Booking,
+  // addBooking,
+  // TimeSlot,
+  // Booking,
 } from "@/lib/data";
 
 export async function GET() {
