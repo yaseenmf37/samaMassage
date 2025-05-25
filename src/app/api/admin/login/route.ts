@@ -1,10 +1,6 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
-// در یک محیط واقعی، این اطلاعات باید در متغیرهای محیطی ذخیره شوند
-const ADMIN_USERNAME = "admin";
-const ADMIN_PASSWORD = "admin123";
-
 export async function POST(request: Request) {
   try {
     const data = await request.json();

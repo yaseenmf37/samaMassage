@@ -56,7 +56,7 @@ export function addTimeSlot(date: string, time: string) {
 export function removeTimeSlot(date: string, time: string) {
   console.log("Removing time slot:", { date, time });
   const index = timeSlots.findIndex(
-    (slot) => slot.date === date && slot.time === time
+    (slot: TimeSlot) => slot.date === date && slot.time === time
   );
   if (index !== -1) {
     timeSlots.splice(index, 1);

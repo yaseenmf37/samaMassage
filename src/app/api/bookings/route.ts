@@ -1,10 +1,17 @@
 import { NextResponse } from "next/server";
-import { timeSlots, bookings, removeTimeSlot, addBooking } from "@/lib/data";
+import {
+  timeSlots,
+  bookings,
+  removeTimeSlot,
+  addBooking,
+  TimeSlot,
+  Booking,
+} from "@/lib/data";
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { date, time } = body;
+    const { date, time, massageType, name, phone, gender, notes } = body;
 
     if (!date || !time) {
       return NextResponse.json(
@@ -15,7 +22,7 @@ export async function POST(request: Request) {
 
     // بررسی وجود زمان در لیست زمان‌های موجود
     const timeSlotExists = timeSlots.some(
-      (slot) => slot.date === date && slot.time === time
+      (slot: TimeSlot) => slot.date === date && slot.time === time
     );
 
     if (!timeSlotExists) {
@@ -27,7 +34,7 @@ export async function POST(request: Request) {
 
     // بررسی رزرو بودن زمان
     const isBooked = bookings.some(
-      (booking) => booking.date === date && booking.time === time
+      (booking: Booking) => booking.date === date && booking.time === time
     );
 
     if (isBooked) {
@@ -38,7 +45,16 @@ export async function POST(request: Request) {
     }
 
     // ثبت رزرو و حذف از لیست زمان‌های موجود
-    addBooking(date, time);
+    const booking: Booking = {
+      date,
+      time,
+      massageType,
+      name,
+      phone,
+      gender,
+      notes,
+    };
+    addBooking(booking);
     removeTimeSlot(date, time);
 
     return NextResponse.json({ success: true });
