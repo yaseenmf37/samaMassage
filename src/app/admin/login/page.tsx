@@ -20,12 +20,16 @@ export default function AdminLogin() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ username, password }),
+        credentials: "include",
       });
+
+      const data = await response.json();
 
       if (response.ok) {
         router.push("/admin");
+        router.refresh();
       } else {
-        setError("نام کاربری یا رمز عبور اشتباه است");
+        setError(data.error || "نام کاربری یا رمز عبور اشتباه است");
       }
     } catch {
       setError("خطا در ارتباط با سرور");

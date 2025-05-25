@@ -9,11 +9,12 @@ export async function POST(request: Request) {
     // بررسی اعتبار کاربر
     if (username === "admin" && password === "admin123") {
       // ذخیره توکن در کوکی
-      const cookieStore = await cookies();
+      const cookieStore = cookies();
       cookieStore.set("admin-token", "admin-token", {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
+        sameSite: "lax",
+        path: "/",
         maxAge: 60 * 60 * 24, // 24 ساعت
       });
 
