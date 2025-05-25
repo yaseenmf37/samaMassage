@@ -16,52 +16,61 @@ export interface Booking extends TimeSlot {
 
 const DATA_FILE = path.join(process.cwd(), "data.json");
 
-// خواندن داده‌ها از فایل
-const readData = () => {
+// تعریف آرایه‌های گلوبال برای زمان‌ها و رزروها
+let globalTimeSlots: TimeSlot[] = [];
+let globalBookings: Booking[] = [];
+
+// خواندن داده‌ها از فایل هنگام شروع برنامه
+const loadData = () => {
   try {
     if (fs.existsSync(DATA_FILE)) {
       const data = JSON.parse(fs.readFileSync(DATA_FILE, "utf-8"));
-      return {
-        timeSlots: data.timeSlots || [],
-        bookings: data.bookings || [],
-      };
+      globalTimeSlots = data.timeSlots || [];
+      globalBookings = data.bookings || [];
+      console.log("Data loaded from file.", {
+        globalTimeSlots,
+        globalBookings,
+      });
+    } else {
+      console.log("Data file not found, starting with empty data.");
     }
   } catch (error) {
-    console.error("Error reading data file:", error);
+    console.error("Error loading data file:", error);
   }
-  return { timeSlots: [], bookings: [] };
 };
 
 // ذخیره داده‌ها در فایل
-const saveData = (data: { timeSlots: TimeSlot[]; bookings: Booking[] }) => {
+const saveData = () => {
   try {
-    fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
+    const dataToSave = { timeSlots: globalTimeSlots, bookings: globalBookings };
+    fs.writeFileSync(DATA_FILE, JSON.stringify(dataToSave, null, 2));
+    console.log("Data saved to file.");
   } catch (error) {
     console.error("Error saving data file:", error);
   }
 };
 
-// خواندن داده‌های اولیه
-const { timeSlots, bookings } = readData();
+// بارگذاری داده‌ها هنگام ایمپورت شدن ماژول
+loadData();
 
-// توابع کمکی برای مدیریت داده‌ها
+// توابع کمکی برای مدیریت داده‌ها با استفاده از آرایه‌های گلوبال
 export function addTimeSlot(date: string, time: string) {
   console.log("Adding time slot:", { date, time });
-  timeSlots.push({ date, time });
-  saveData({ timeSlots, bookings });
-  console.log("Updated time slots:", timeSlots);
+  globalTimeSlots.push({ date, time });
+  saveData();
+  console.log("Updated time slots:", globalTimeSlots);
   return { date, time };
 }
 
 export function removeTimeSlot(date: string, time: string) {
   console.log("Removing time slot:", { date, time });
-  const index = timeSlots.findIndex(
+  const index = globalTimeSlots.findIndex(
     (slot: TimeSlot) => slot.date === date && slot.time === time
   );
   if (index !== -1) {
-    timeSlots.splice(index, 1);
-    saveData({ timeSlots, bookings });
-    console.log("Updated time slots after removal:", timeSlots);
+    globalTimeSlots.splice(index, 1);
+    saveData();
+    console.log("Updated time slots after removal:", globalTimeSlots);
     return true;
   }
   return false;
@@ -70,21 +79,37 @@ export function removeTimeSlot(date: string, time: string) {
 export function addBooking(booking: Booking) {
   console.log("Adding booking:", booking);
   // حذف زمان از لیست زمان‌های موجود
-  removeTimeSlot(booking.date, booking.time);
+  // removeTimeSlot(booking.date, booking.time); // این خط را حذف می کنیم چون حذف در API bookings انجام می شود
   // اضافه کردن به لیست رزروها
-  bookings.push(booking);
-  saveData({ timeSlots, bookings });
-  console.log("Updated bookings:", bookings);
+  globalBookings.push(booking);
+  saveData();
+  console.log("Updated bookings:", globalBookings);
   return booking;
 }
 
+export function removeBooking(date: string, time: string) {
+  console.log("Removing booking:", { date, time });
+  const index = globalBookings.findIndex(
+    (booking: Booking) => booking.date === date && booking.time === time
+  );
+  if (index !== -1) {
+    globalBookings.splice(index, 1);
+    saveData();
+    console.log("Updated bookings after removal:", globalBookings);
+    return true;
+  }
+  return false;
+}
+
 export function getTimeSlots() {
-  return timeSlots;
+  console.log("Getting time slots:", globalTimeSlots);
+  return globalTimeSlots;
 }
 
 export function getBookings() {
-  return bookings;
+  console.log("Getting bookings:", globalBookings);
+  return globalBookings;
 }
 
-// Export the arrays
-export { timeSlots, bookings };
+// Export the arrays (اختیاری، برای دسترسی مستقیم در صورت نیاز)
+// export { globalTimeSlots as timeSlots, globalBookings as bookings };
