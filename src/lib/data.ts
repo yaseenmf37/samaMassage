@@ -1,5 +1,4 @@
-import lowdb from "lowdb";
-import FileSync from "lowdb/adapters/FileSync";
+import fs from "fs";
 import path from "path";
 
 export interface TimeSlot {
@@ -15,21 +14,47 @@ export interface Booking extends TimeSlot {
   notes?: string;
 }
 
-// تنظیم دیتابیس
-const adapter = new FileSync(path.join(process.cwd(), "db.json"));
-const db = lowdb(adapter);
+interface Database {
+  timeSlots: TimeSlot[];
+  bookings: Booking[];
+}
 
-// مقداردهی اولیه دیتابیس
-db.defaults({ timeSlots: [], bookings: [] }).write();
+const DB_FILE = path.join(process.cwd(), "db.json");
+
+// خواندن داده‌ها از فایل
+function readDB(): Database {
+  try {
+    if (fs.existsSync(DB_FILE)) {
+      const data = JSON.parse(fs.readFileSync(DB_FILE, "utf-8"));
+      return {
+        timeSlots: data.timeSlots || [],
+        bookings: data.bookings || [],
+      };
+    }
+  } catch (error) {
+    console.error("Error reading database:", error);
+  }
+  return { timeSlots: [], bookings: [] };
+}
+
+// ذخیره داده‌ها در فایل
+function writeDB(data: Database) {
+  try {
+    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
+  } catch (error) {
+    console.error("Error writing to database:", error);
+    throw error;
+  }
+}
 
 // توابع کمکی برای مدیریت داده‌ها
 export function addTimeSlot(date: string, time: string) {
   console.log("Adding time slot:", { date, time });
-  const timeSlots = db.get("timeSlots").value();
+  const db = readDB();
   const newTimeSlot = { date, time };
 
   // بررسی تکراری نبودن
-  const exists = timeSlots.some(
+  const exists = db.timeSlots.some(
     (slot: TimeSlot) => slot.date === date && slot.time === time
   );
 
@@ -38,15 +63,16 @@ export function addTimeSlot(date: string, time: string) {
     return null;
   }
 
-  db.get("timeSlots").push(newTimeSlot).write();
+  db.timeSlots.push(newTimeSlot);
+  writeDB(db);
   console.log("Time slot added successfully");
   return newTimeSlot;
 }
 
 export function removeTimeSlot(date: string, time: string) {
   console.log("Removing time slot:", { date, time });
-  const timeSlots = db.get("timeSlots").value();
-  const index = timeSlots.findIndex(
+  const db = readDB();
+  const index = db.timeSlots.findIndex(
     (slot: TimeSlot) => slot.date === date && slot.time === time
   );
 
@@ -55,17 +81,18 @@ export function removeTimeSlot(date: string, time: string) {
     return false;
   }
 
-  db.get("timeSlots").splice(index, 1).write();
+  db.timeSlots.splice(index, 1);
+  writeDB(db);
   console.log("Time slot removed successfully");
   return true;
 }
 
 export function addBooking(booking: Booking) {
   console.log("Adding booking:", booking);
-  const bookings = db.get("bookings").value();
+  const db = readDB();
 
   // بررسی تکراری نبودن
-  const exists = bookings.some(
+  const exists = db.bookings.some(
     (b: Booking) => b.date === booking.date && b.time === booking.time
   );
 
@@ -74,15 +101,16 @@ export function addBooking(booking: Booking) {
     return null;
   }
 
-  db.get("bookings").push(booking).write();
+  db.bookings.push(booking);
+  writeDB(db);
   console.log("Booking added successfully");
   return booking;
 }
 
 export function removeBooking(date: string, time: string) {
   console.log("Removing booking:", { date, time });
-  const bookings = db.get("bookings").value();
-  const index = bookings.findIndex(
+  const db = readDB();
+  const index = db.bookings.findIndex(
     (booking: Booking) => booking.date === date && booking.time === time
   );
 
@@ -91,19 +119,20 @@ export function removeBooking(date: string, time: string) {
     return false;
   }
 
-  db.get("bookings").splice(index, 1).write();
+  db.bookings.splice(index, 1);
+  writeDB(db);
   console.log("Booking removed successfully");
   return true;
 }
 
 export function getTimeSlots() {
   console.log("Getting time slots");
-  return db.get("timeSlots").value();
+  return readDB().timeSlots;
 }
 
 export function getBookings() {
   console.log("Getting bookings");
-  return db.get("bookings").value();
+  return readDB().bookings;
 }
 
 // تابع کمکی برای تبدیل تاریخ به فرمت استاندارد
