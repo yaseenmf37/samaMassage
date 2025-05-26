@@ -14,7 +14,8 @@ export interface Booking extends TimeSlot {
   notes?: string;
 }
 
-const DATA_FILE = path.join(process.cwd(), "data.json");
+// تغییر مسیر فایل داده‌ها به پوشه public
+const DATA_FILE = path.join(process.cwd(), "public", "data.json");
 
 // تعریف آرایه‌های گلوبال برای زمان‌ها و رزروها
 let globalTimeSlots: TimeSlot[] = [];
@@ -23,30 +24,43 @@ let globalBookings: Booking[] = [];
 // خواندن داده‌ها از فایل هنگام شروع برنامه
 const loadData = () => {
   try {
+    console.log("Attempting to load data from:", DATA_FILE);
     if (fs.existsSync(DATA_FILE)) {
       const data = JSON.parse(fs.readFileSync(DATA_FILE, "utf-8"));
       globalTimeSlots = data.timeSlots || [];
       globalBookings = data.bookings || [];
-      console.log("Data loaded from file.", {
-        globalTimeSlots,
-        globalBookings,
+      console.log("Data loaded successfully:", {
+        timeSlotsCount: globalTimeSlots.length,
+        bookingsCount: globalBookings.length,
       });
     } else {
-      console.log("Data file not found, starting with empty data.");
+      console.log("Data file not found, creating new file...");
+      // ایجاد فایل با داده‌های خالی
+      const initialData = { timeSlots: [], bookings: [] };
+      fs.writeFileSync(DATA_FILE, JSON.stringify(initialData, null, 2));
+      console.log("New data file created.");
     }
   } catch (error) {
-    console.error("Error loading data file:", error);
+    console.error("Error in loadData:", error);
+    // در صورت خطا، آرایه‌ها را خالی نگه می‌داریم
+    globalTimeSlots = [];
+    globalBookings = [];
   }
 };
 
 // ذخیره داده‌ها در فایل
 const saveData = () => {
   try {
+    console.log("Attempting to save data to:", DATA_FILE);
     const dataToSave = { timeSlots: globalTimeSlots, bookings: globalBookings };
     fs.writeFileSync(DATA_FILE, JSON.stringify(dataToSave, null, 2));
-    console.log("Data saved to file.");
+    console.log("Data saved successfully:", {
+      timeSlotsCount: globalTimeSlots.length,
+      bookingsCount: globalBookings.length,
+    });
   } catch (error) {
-    console.error("Error saving data file:", error);
+    console.error("Error in saveData:", error);
+    throw error; // پرتاب خطا برای مدیریت بهتر در لایه‌های بالاتر
   }
 };
 
