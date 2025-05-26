@@ -1,4 +1,5 @@
-import fs from "fs";
+import lowdb from "lowdb";
+import FileSync from "lowdb/adapters/FileSync";
 import path from "path";
 
 export interface TimeSlot {
@@ -14,124 +15,100 @@ export interface Booking extends TimeSlot {
   notes?: string;
 }
 
-// تغییر مسیر فایل داده‌ها به پوشه public
-const DATA_FILE = path.join(process.cwd(), "public", "data.json");
+// تنظیم دیتابیس
+const adapter = new FileSync(path.join(process.cwd(), "db.json"));
+const db = lowdb(adapter);
 
-// تعریف آرایه‌های گلوبال برای زمان‌ها و رزروها
-let globalTimeSlots: TimeSlot[] = [];
-let globalBookings: Booking[] = [];
+// مقداردهی اولیه دیتابیس
+db.defaults({ timeSlots: [], bookings: [] }).write();
 
-// خواندن داده‌ها از فایل هنگام شروع برنامه
-const loadData = () => {
-  try {
-    console.log("Attempting to load data from:", DATA_FILE);
-    if (fs.existsSync(DATA_FILE)) {
-      const data = JSON.parse(fs.readFileSync(DATA_FILE, "utf-8"));
-      globalTimeSlots = data.timeSlots || [];
-      globalBookings = data.bookings || [];
-      console.log("Data loaded successfully:", {
-        timeSlotsCount: globalTimeSlots.length,
-        bookingsCount: globalBookings.length,
-      });
-    } else {
-      console.log("Data file not found, creating new file...");
-      // ایجاد فایل با داده‌های خالی
-      const initialData = { timeSlots: [], bookings: [] };
-      fs.writeFileSync(DATA_FILE, JSON.stringify(initialData, null, 2));
-      console.log("New data file created.");
-    }
-  } catch (error) {
-    console.error("Error in loadData:", error);
-    // در صورت خطا، آرایه‌ها را خالی نگه می‌داریم
-    globalTimeSlots = [];
-    globalBookings = [];
-  }
-};
-
-// ذخیره داده‌ها در فایل
-const saveData = () => {
-  try {
-    console.log("Attempting to save data to:", DATA_FILE);
-    const dataToSave = { timeSlots: globalTimeSlots, bookings: globalBookings };
-    fs.writeFileSync(DATA_FILE, JSON.stringify(dataToSave, null, 2));
-    console.log("Data saved successfully:", {
-      timeSlotsCount: globalTimeSlots.length,
-      bookingsCount: globalBookings.length,
-    });
-  } catch (error) {
-    console.error("Error in saveData:", error);
-    throw error; // پرتاب خطا برای مدیریت بهتر در لایه‌های بالاتر
-  }
-};
-
-// بارگذاری داده‌ها هنگام ایمپورت شدن ماژول
-loadData();
-
-// توابع کمکی برای مدیریت داده‌ها با استفاده از آرایه‌های گلوبال
+// توابع کمکی برای مدیریت داده‌ها
 export function addTimeSlot(date: string, time: string) {
   console.log("Adding time slot:", { date, time });
-  globalTimeSlots.push({ date, time });
-  saveData();
-  console.log("Updated time slots:", globalTimeSlots);
-  return { date, time };
+  const timeSlots = db.get("timeSlots").value();
+  const newTimeSlot = { date, time };
+
+  // بررسی تکراری نبودن
+  const exists = timeSlots.some(
+    (slot: TimeSlot) => slot.date === date && slot.time === time
+  );
+
+  if (exists) {
+    console.log("Time slot already exists");
+    return null;
+  }
+
+  db.get("timeSlots").push(newTimeSlot).write();
+  console.log("Time slot added successfully");
+  return newTimeSlot;
 }
 
 export function removeTimeSlot(date: string, time: string) {
   console.log("Removing time slot:", { date, time });
-  const index = globalTimeSlots.findIndex(
+  const timeSlots = db.get("timeSlots").value();
+  const index = timeSlots.findIndex(
     (slot: TimeSlot) => slot.date === date && slot.time === time
   );
-  if (index !== -1) {
-    globalTimeSlots.splice(index, 1);
-    saveData();
-    console.log("Updated time slots after removal:", globalTimeSlots);
-    return true;
+
+  if (index === -1) {
+    console.log("Time slot not found");
+    return false;
   }
-  return false;
+
+  db.get("timeSlots").splice(index, 1).write();
+  console.log("Time slot removed successfully");
+  return true;
 }
 
 export function addBooking(booking: Booking) {
   console.log("Adding booking:", booking);
-  // استانداردسازی تاریخ و زمان
-  const standardizedBooking = {
-    ...booking,
-    date: standardizeDate(booking.date),
-    time: standardizeTime(booking.time),
-  };
-  globalBookings.push(standardizedBooking);
-  saveData();
-  console.log("Updated bookings:", globalBookings);
-  return standardizedBooking;
+  const bookings = db.get("bookings").value();
+
+  // بررسی تکراری نبودن
+  const exists = bookings.some(
+    (b: Booking) => b.date === booking.date && b.time === booking.time
+  );
+
+  if (exists) {
+    console.log("Booking already exists");
+    return null;
+  }
+
+  db.get("bookings").push(booking).write();
+  console.log("Booking added successfully");
+  return booking;
 }
 
 export function removeBooking(date: string, time: string) {
   console.log("Removing booking:", { date, time });
-  const index = globalBookings.findIndex(
+  const bookings = db.get("bookings").value();
+  const index = bookings.findIndex(
     (booking: Booking) => booking.date === date && booking.time === time
   );
-  if (index !== -1) {
-    globalBookings.splice(index, 1);
-    saveData();
-    console.log("Updated bookings after removal:", globalBookings);
-    return true;
+
+  if (index === -1) {
+    console.log("Booking not found");
+    return false;
   }
-  return false;
+
+  db.get("bookings").splice(index, 1).write();
+  console.log("Booking removed successfully");
+  return true;
 }
 
 export function getTimeSlots() {
-  console.log("Getting time slots:", globalTimeSlots);
-  return globalTimeSlots;
+  console.log("Getting time slots");
+  return db.get("timeSlots").value();
 }
 
 export function getBookings() {
-  console.log("Getting bookings:", globalBookings);
-  return globalBookings;
+  console.log("Getting bookings");
+  return db.get("bookings").value();
 }
 
 // تابع کمکی برای تبدیل تاریخ به فرمت استاندارد
 export function standardizeDate(date: string): string {
   try {
-    // تبدیل تاریخ شمسی به میلادی
     const [year, month, day] = date.split("/").map(Number);
     const persianDate = new Date(year, month - 1, day);
     return persianDate.toISOString().split("T")[0];
@@ -144,7 +121,6 @@ export function standardizeDate(date: string): string {
 // تابع کمکی برای تبدیل زمان به فرمت استاندارد
 export function standardizeTime(time: string): string {
   try {
-    // اطمینان از فرمت 24 ساعته
     const [hours, minutes] = time.split(":").map(Number);
     return `${hours.toString().padStart(2, "0")}:${minutes
       .toString()
