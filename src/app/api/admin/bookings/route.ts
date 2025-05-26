@@ -1,13 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import {
-  // timeSlots,
-  removeBooking,
-  getBookings,
-  // addBooking,
-  // TimeSlot,
-  // Booking,
-} from "@/lib/data";
+import connectDB from "@/lib/mongodb";
+import Booking from "@/models/Booking";
 
 export async function GET() {
   try {
@@ -18,7 +12,8 @@ export async function GET() {
       return NextResponse.json({ error: "دسترسی غیرمجاز" }, { status: 401 });
     }
 
-    const bookings = getBookings();
+    await connectDB();
+    const bookings = await Booking.find({}).sort({ date: 1, time: 1 });
     console.log("Admin panel - Current bookings:", bookings);
     return NextResponse.json({ bookings });
   } catch (error) {
@@ -48,13 +43,19 @@ export async function DELETE(request: Request) {
       );
     }
 
-    const success = removeBooking(date, time);
-    if (!success) {
+    await connectDB();
+    const result = await Booking.deleteOne({ date, time });
+
+    if (result.deletedCount === 0) {
       return NextResponse.json(
         { error: "رزرو مورد نظر یافت نشد" },
         { status: 404 }
       );
     }
+
+    const updatedBookings = await Booking.find({}).sort({ date: 1, time: 1 });
+    console.log("Admin panel - Booking removed:", { date, time });
+    console.log("Admin panel - Updated bookings:", updatedBookings);
 
     return NextResponse.json({ success: true });
   } catch (error) {

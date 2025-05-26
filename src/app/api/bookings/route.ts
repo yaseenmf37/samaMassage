@@ -1,14 +1,7 @@
 import { NextResponse } from "next/server";
-import {
-  removeTimeSlot,
-  addBooking,
-  TimeSlot,
-  Booking,
-  getTimeSlots,
-  getBookings,
-  standardizeDate,
-  standardizeTime,
-} from "@/lib/data";
+import connectDB from "@/lib/mongodb";
+import TimeSlot from "@/models/TimeSlot";
+import Booking from "@/models/Booking";
 
 export async function POST(request: Request) {
   console.log("Received POST request to /api/bookings");
@@ -25,23 +18,11 @@ export async function POST(request: Request) {
       );
     }
 
-    // استانداردسازی تاریخ و زمان
-    const standardizedDate = standardizeDate(date);
-    const standardizedTime = standardizeTime(time);
+    await connectDB();
 
-    const timeSlots = getTimeSlots();
-    console.log(
-      `Checking if time slot ${standardizedDate} ${standardizedTime} exists in current time slots:`,
-      timeSlots
-    );
     // بررسی وجود زمان در لیست زمان‌های موجود
-    const timeSlotExists = timeSlots.some(
-      (slot: TimeSlot) =>
-        standardizeDate(slot.date) === standardizedDate &&
-        standardizeTime(slot.time) === standardizedTime
-    );
-
-    if (!timeSlotExists) {
+    const timeSlot = await TimeSlot.findOne({ date, time });
+    if (!timeSlot) {
       console.error("Validation error: Time slot does not exist");
       return NextResponse.json(
         { error: "این زمان برای رزرو موجود نیست" },
@@ -49,18 +30,9 @@ export async function POST(request: Request) {
       );
     }
 
-    const bookings = getBookings();
-    console.log(
-      `Checking if time slot ${standardizedDate} ${standardizedTime} is already booked in current bookings:`,
-      bookings
-    );
     // بررسی رزرو بودن زمان
-    const isBooked = bookings.some(
-      (booking: Booking) =>
-        booking.date === standardizedDate && booking.time === standardizedTime
-    );
-
-    if (isBooked) {
+    const existingBooking = await Booking.findOne({ date, time });
+    if (existingBooking) {
       console.error("Validation error: Time slot is already booked");
       return NextResponse.json(
         { error: "این زمان قبلاً رزرو شده است" },
@@ -70,17 +42,17 @@ export async function POST(request: Request) {
 
     console.log("Attempting to add booking and remove time slot...");
     // ثبت رزرو و حذف از لیست زمان‌های موجود
-    const booking: Booking = {
-      date: standardizedDate,
-      time: standardizedTime,
+    const booking = await Booking.create({
+      date,
+      time,
       massageType,
       name,
       phone,
       gender,
       notes,
-    };
-    addBooking(booking);
-    removeTimeSlot(date, time);
+    });
+
+    await TimeSlot.deleteOne({ date, time });
     console.log("Booking successful!");
 
     return NextResponse.json({ success: true });
