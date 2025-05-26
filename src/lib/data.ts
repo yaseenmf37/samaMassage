@@ -78,13 +78,16 @@ export function removeTimeSlot(date: string, time: string) {
 
 export function addBooking(booking: Booking) {
   console.log("Adding booking:", booking);
-  // حذف زمان از لیست زمان‌های موجود
-  // removeTimeSlot(booking.date, booking.time); // این خط را حذف می کنیم چون حذف در API bookings انجام می شود
-  // اضافه کردن به لیست رزروها
-  globalBookings.push(booking);
+  // استانداردسازی تاریخ و زمان
+  const standardizedBooking = {
+    ...booking,
+    date: standardizeDate(booking.date),
+    time: standardizeTime(booking.time),
+  };
+  globalBookings.push(standardizedBooking);
   saveData();
   console.log("Updated bookings:", globalBookings);
-  return booking;
+  return standardizedBooking;
 }
 
 export function removeBooking(date: string, time: string) {
@@ -109,6 +112,33 @@ export function getTimeSlots() {
 export function getBookings() {
   console.log("Getting bookings:", globalBookings);
   return globalBookings;
+}
+
+// تابع کمکی برای تبدیل تاریخ به فرمت استاندارد
+export function standardizeDate(date: string): string {
+  try {
+    // تبدیل تاریخ شمسی به میلادی
+    const [year, month, day] = date.split("/").map(Number);
+    const persianDate = new Date(year, month - 1, day);
+    return persianDate.toISOString().split("T")[0];
+  } catch (error) {
+    console.error("Error standardizing date:", error);
+    return date;
+  }
+}
+
+// تابع کمکی برای تبدیل زمان به فرمت استاندارد
+export function standardizeTime(time: string): string {
+  try {
+    // اطمینان از فرمت 24 ساعته
+    const [hours, minutes] = time.split(":").map(Number);
+    return `${hours.toString().padStart(2, "0")}:${minutes
+      .toString()
+      .padStart(2, "0")}`;
+  } catch (error) {
+    console.error("Error standardizing time:", error);
+    return time;
+  }
 }
 
 // Export the arrays (اختیاری، برای دسترسی مستقیم در صورت نیاز)
