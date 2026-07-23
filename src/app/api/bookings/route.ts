@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
 import TimeSlot from "@/models/TimeSlot";
 import Booking from "@/models/Booking";
+import { notifyAdmins } from "@/lib/rubika";
+import { jalaliValueToLabel, toPersianDigits } from "@/lib/jalali";
+
+export const runtime = "nodejs";
 
 export async function POST(request: Request) {
   console.log("Received POST request to /api/bookings");
@@ -55,7 +59,26 @@ export async function POST(request: Request) {
     await TimeSlot.deleteOne({ date, time });
     console.log("Booking successful!");
 
-    return NextResponse.json({ success: true });
+    // اطلاع‌رسانی به مدیرها در روبیکا (بدون بلاک کردن پاسخ)
+    const typeMap: Record<string, string> = {
+      relaxing: "ریلکسی",
+      vip: "وی‌آی‌پی (VIP)",
+    };
+    const genderMap: Record<string, string> = { female: "خانم", male: "آقا" };
+    const notifText =
+      `🔔 رزرو جدید ثبت شد!\n\n` +
+      `📅 ${jalaliValueToLabel(date)}\n` +
+      `🕐 ساعت ${toPersianDigits(time)}\n` +
+      `👤 ${name || "-"}\n` +
+      `📞 ${toPersianDigits(phone || "-")}\n` +
+      `💆 ${typeMap[massageType] || massageType || "-"}\n` +
+      `🧑 ${genderMap[gender] || gender || "-"}` +
+      (notes ? `\n📝 ${notes}` : "");
+    notifyAdmins(notifText).catch((e) =>
+      console.error("notifyAdmins error:", e)
+    );
+
+    return NextResponse.json({ success: true, booking });
   } catch (error) {
     console.error("Error in /api/bookings:", error);
     return NextResponse.json(

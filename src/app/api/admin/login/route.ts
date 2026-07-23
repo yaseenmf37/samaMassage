@@ -6,16 +6,17 @@ export async function POST(request: Request) {
     const data = await request.json();
     const { username, password } = data;
 
-    // بررسی اعتبار کاربر
-    if (username === "admin" && password === "admin123") {
-      // ذخیره توکن در کوکی
-      const cookieStore = cookies();
+    const validUser = process.env.ADMIN_USERNAME || "admin";
+    const validPass = process.env.ADMIN_PASSWORD || "admin123";
+
+    if (username === validUser && password === validPass) {
+      const cookieStore = await cookies();
       cookieStore.set("admin-token", "admin-token", {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
         path: "/",
-        maxAge: 60 * 60 * 24, // 24 ساعت
+        maxAge: 60 * 60 * 24 * 7, // ۷ روز
       });
 
       return NextResponse.json({ success: true });
